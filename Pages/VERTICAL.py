@@ -105,7 +105,7 @@ with tab1:
     gk=gk.reset_index()
     choice = st.selectbox("Choose a vertical:",gk['vertical'].iloc[0:25])
     
-    st.subheader("Major Hubs Of The Vertical")
+    st.subheader(f"Major Hubs Of {choice}")
     df['city'] = df['city'].str.replace(" ","",regex=False)
     
     fk = df[df['vertical']==choice]
