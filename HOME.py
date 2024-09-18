@@ -55,22 +55,21 @@ st.markdown("""---""")
 #         return None, None
 
 # cities = df['city'].unique()
-# lat, lon = [], []
+# lat, lon ,citi = [], [],[]
 # for i in cities:
 #     v = get_lat_lon(i)
 #     lat.append(v[0])
 #     lon.append(v[1])
+#     citi.append(i)
 
-# data = pd.DataFrame({'lat': lat, 'lon':lon})
+# data = pd.DataFrame({'city': citi,'lat': lat, 'lon':lon})
 # data = data[(data['lat'] >= 8.4) & (data['lat'] <= 37.6) & 
 #                   (data['lon'] >= 68.7) & (data['lon'] <= 97.25)]
 # data.to_csv('cities.csv')
 
 data = pd.read_csv('cities.csv')
-data = data.iloc[:,1:3]
-india_data = data[(data['lat'] >= 8.4) & (data['lat'] <= 37.6) & 
-                  (data['lon'] >= 68.7) & (data['lon'] <= 97.25)]
-st.map(india_data,  color = '#86FD02')
+data = data.iloc[:,2:4]
+st.map(data,  color = '#86FD02')
 
 st.header('Year Wise Analysis')
 col1, col2 = st.columns(2)
