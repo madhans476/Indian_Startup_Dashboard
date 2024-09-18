@@ -155,3 +155,7 @@ with col2:
     subtype = st.selectbox("SubType",['Barplot','Lineplot','DataFrame'])
     data = df['year'].value_counts()
     line_and_df(data, subtype, year_wise)
+
+fig, ax = plt.subplots(figsize=(10, 6))
+plt.plot(range(len(df['amount'])),df['amount'],marker='o')
+st.pyplot(fig)
