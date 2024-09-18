@@ -4,6 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import altair as alt
 
+st.set_page_config(layout="wide")
 st.title("Major Startup Verticals In India")
 
 tab1,tab2,tab3 = st.tabs(["Major Verticals","Startups","Compare Startups"])
@@ -13,7 +14,7 @@ df = pd.read_csv("Final.csv")
 df.columns = df.columns.str.replace(' ', '')
 
 def line_plot(df,x,y):
-    fig, ax = plt.subplots(figsize=(7, 3.5))
+    fig, ax = plt.subplots(figsize=(6, 2.5))
     fig.patch.set_facecolor('#0E1117') 
     ax.set_facecolor('#262730')
     sns.lineplot(data=df, x=x, y=y,color="Orange", ax=ax)
@@ -28,13 +29,13 @@ def line_plot(df,x,y):
     st.pyplot(fig)
     
 def bar_plot(df,x,y):
-    fig, ax = plt.subplots(figsize=(7, 3.5))
+    fig, ax = plt.subplots(figsize=(6, 2.5))
     fig.patch.set_facecolor('#0E1117') 
     ax.set_facecolor('#262730')
     axis = sns.barplot(data=df, x=x, y=y, color="Orange", ax=ax)
 
     for container in axis.containers:
-        axis.bar_label(container, fmt='%d', padding=3, color='white')
+        axis.bar_label(container, fmt='%d', padding=3, color='white',fontsize = 5)
     ax.xaxis.set_tick_params(color='white',)  
     ax.yaxis.set_tick_params(color='white')  
     ax.tick_params(axis='x', colors='white',labelsize=5)  
@@ -64,13 +65,23 @@ def year_wise(year):
     bar_plot(sorted_df,"startup","vertical")
 
 # @st.cache_data      
-def vertical_analysis(choice):
+def vertical_analysis(choice,selection):
     df_filtered = df[df['vertical']==choice]
     df_filtered = df_filtered.groupby('year')['startup'].count()
     df_filtered = df_filtered.reset_index()
     df_filtered['year'] = df_filtered['year'].astype(str)
+    if selection == "DataFrame":
+        return df_filtered
     line_plot(df_filtered,'year','startup')
     
+    
+def funding_analysis(choice,selection):
+    gk = df.groupby(['vertical','year'])['amount'].sum()
+    gk = gk.reset_index()
+    gk = gk[gk['vertical']==choice]
+    if selection=="DataFrame":
+        return gk
+    line_plot(gk,'year','amount')
 
 ## Tab 1
 with tab1:
@@ -89,11 +100,36 @@ with tab1:
     
     ## Vertical Wise Analysis
     st.write("\n")
-    st.subheader("Vertical Analysis")
+    st.header("Vertical Analysis")
     gk=df.groupby('vertical')['amount'].sum().sort_values(ascending=False)
     gk=gk.reset_index()
     choice = st.selectbox("Choose a vertical:",gk['vertical'].iloc[0:25])
-    vertical_analysis(choice)
+    st.subheader("Number of Startups vs Year")
+    selection = st.selectbox("Options",['Lineplot','DataFrame'],key='selectbox2')
+    if(selection=="Lineplot"):
+        vertical_analysis(choice,selection)
+        
+    else:
+        
+        data_frame = vertical_analysis(choice,selection)
+        st.dataframe(data_frame.style.set_properties(**{'background-color': '#262730','text-align': 'center',}))
+    st.write("\n")
+    
+    
+    
+    ## Funding analysis
+    st.subheader("Funding vs Year")
+    selection = st.selectbox("Options",['Lineplot','DataFrame'],key='selectbox1')
+    if(selection=="Lineplot"):
+        funding_analysis(choice,selection)
+        
+    else: 
+        data_frame = funding_analysis(choice,selection)
+        data_frame.drop(columns='vertical',inplace=True)
+        data_frame=data_frame.reset_index()
+        data_frame.drop(columns='index',inplace=True)
+        st.dataframe(data_frame.style.set_properties(**{'background-color': '#262730','text-align': 'center'}))
+    st.write("\n")
     
     
 
