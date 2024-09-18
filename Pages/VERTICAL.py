@@ -6,7 +6,7 @@ import altair as alt
 
 st.set_page_config(layout='wide',page_title="Major Startup Verticals In India")
 
-tab1,tab2,tab3 = st.tabs(["Major Verticals","Startups","Compare Startups"])
+tab1,tab2 = st.tabs(["Major Verticals","Compare Verticals"])
 st.write()
 
 df = pd.read_csv("startup_funding.csv")
@@ -78,6 +78,7 @@ def funding_analysis(choice,selection):
     gk = df.groupby(['vertical','year'])['amount'].sum()
     gk = gk.reset_index()
     gk = gk[gk['vertical']==choice]
+    gk['year']=gk['year'].astype(str)
     if selection=="DataFrame":
         return gk
     line_plot(gk,'year','amount')
@@ -103,8 +104,23 @@ with tab1:
     gk=df.groupby('vertical')['amount'].sum().sort_values(ascending=False)
     gk=gk.reset_index()
     choice = st.selectbox("Choose a vertical:",gk['vertical'].iloc[0:25])
-    col1,col2 = st.columns(2)
     
+    st.subheader("Major Hubs Of The Vertical")
+    df['city'] = df['city'].str.replace(" ","",regex=False)
+    
+    fk = df[df['vertical']==choice]
+    citi = pd.read_csv('cities.csv')
+    citi['city'] = citi['city'].str.replace(" ","",regex=False)
+    # citi.to_csv('cities.csv')
+    merged_data = citi[citi['city'].isin(fk['city'])]
+    
+    if 'lat' in merged_data.columns and 'lon' in merged_data.columns:
+        st.map(merged_data[['lat', 'lon']], color='#86FD02')
+    else:
+        st.error("The city data is missing 'latitude' and 'longitude' columns.")
+    
+    
+    col1,col2 = st.columns(2)
     with col1:
         ## Vertical Wise Analysis
         st.subheader("Number of Startups vs Year")
