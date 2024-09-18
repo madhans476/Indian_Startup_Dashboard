@@ -28,7 +28,7 @@ with col3:
 with col4:
     st.metric('Median ₹', str(round(med)) + ' cr')
 
-st.write('\# Feature: Number of Features')
+st.write('\# Feature:  Number of Features')
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
@@ -62,11 +62,15 @@ st.markdown("""---""")
 #     lon.append(v[1])
 
 # data = pd.DataFrame({'lat': lat, 'lon':lon})
+# data = data[(data['lat'] >= 8.4) & (data['lat'] <= 37.6) & 
+#                   (data['lon'] >= 68.7) & (data['lon'] <= 97.25)]
 # data.to_csv('cities.csv')
 
 data = pd.read_csv('cities.csv')
 data = data.iloc[:,1:3]
-st.map(data)
+india_data = data[(data['lat'] >= 8.4) & (data['lat'] <= 37.6) & 
+                  (data['lon'] >= 68.7) & (data['lon'] <= 97.25)]
+st.map(india_data,  color = '#86FD02')
 
 st.header('Year Wise Analysis')
 col1, col2 = st.columns(2)
@@ -93,41 +97,47 @@ def line_and_df(data, subtype, year_wise):
     
     if subtype == 'Barplot':
         fig, ax = plt.subplots(figsize=(10, 6))
-
+        fig.patch.set_facecolor('#0E1117') 
+        ax.set_facecolor('#262730')
         # Create an enhanced barplot
-        axis = sns.barplot(x=data['Year'], y=data[s], ax=ax)
+        axis = sns.barplot(x=data['Year'], y=data[s],color="Orange", ax=ax)
 
         # Add labels to the bars
         for container in axis.containers:
-            axis.bar_label(container, fmt='%d', padding=3)
-
-        # Add gridlines to improve readability
-        # ax.grid(True, which='both', linestyle='--', linewidth=0.7, alpha=0.7)
+            axis.bar_label(container, fmt='%d', padding=3, color='white')
+        ax.xaxis.set_tick_params(color='white',)  
+        ax.yaxis.set_tick_params(color='white')  
+        ax.tick_params(axis='x', colors='white')  
+        ax.tick_params(axis='y', colors='white')
+        ax.xaxis.label.set_color('white')        
+        ax.yaxis.label.set_color('white')        
+        ax.title.set_color('white')
 
         # Add title and axis labels with better styling
         ax.set_title(f'{s} Over Years', fontsize=16)
         ax.set_xlabel('Year', fontsize=12)
         ax.set_ylabel(f'{s}', fontsize=12)
 
-
-        # Change the background to make it visually appealing
-        ax.set_facecolor('#f0f0f0')
-
-        # Display the enhanced bar chart in Streamlit
         st.pyplot(fig)
         download_plot(fig, year_wise, f"{year_wise}_{subtype}.png")
     elif subtype == 'Lineplot':
         fig, ax = plt.subplots(figsize=(10, 6))
+        fig.patch.set_facecolor('#0E1117') 
+        ax.set_facecolor('#262730')
+        sns.lineplot(x=data['Year'], y=data[s], marker='o', color='Orange', linewidth=2.5)
 
-        sns.lineplot(x=data['Year'], y=data[s], marker='o', color='blue', linewidth=2.5)
-
-        ax.grid(True, which='both', linestyle='--', linewidth=0.7, alpha=0.7)
-
+        # ax.grid(True, which='both', linestyle='--', linewidth=0.7, alpha=0.7)
+        ax.xaxis.set_tick_params(color='white')  
+        ax.yaxis.set_tick_params(color='white')  
+        ax.tick_params(axis='x', colors='white', labelsize=4)  
+        ax.tick_params(axis='y', colors='white', labelsize=4)
+        ax.xaxis.label.set_color('white')        
+        ax.yaxis.label.set_color('white')        
+        ax.title.set_color('white')
         ax.set_title(f'{s} Over Years', fontsize=16)
         ax.set_xlabel('Year', fontsize=12)
         ax.set_ylabel(f'{s}', fontsize=12)
 
-        ax.set_facecolor('#f0f0f0')
 
         # Add the plot to Streamlit
         st.pyplot(fig)
@@ -136,9 +146,9 @@ def line_and_df(data, subtype, year_wise):
         data['Year'] = data['Year'].astype(str)
         st.write('Data Overview:')
         st.dataframe(data.style.set_properties(**{
-            'background-color': '#f9f9f9',
+            'background-color': '#262730',
             'border': '1px solid black',
-            'color': 'black',
+            # 'color': 'black',
             'text-align': 'center'
         }))
 
