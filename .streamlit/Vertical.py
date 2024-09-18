@@ -10,7 +10,7 @@ st.title("Major Startup Verticals In India")
 tab1,tab2,tab3 = st.tabs(["Major Verticals","Startups","Compare Startups"])
 st.write()
 
-df = pd.read_csv("Final.csv")
+df = pd.read_csv("")
 df.columns = df.columns.str.replace(' ', '')
 
 def line_plot(df,x,y):
