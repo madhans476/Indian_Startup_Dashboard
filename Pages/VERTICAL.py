@@ -97,38 +97,43 @@ with tab1:
     st.write("\n")
     year_wise(choice)
     
-    ## Vertical Wise Analysis
+    
     st.write("\n")
     st.header("Vertical Analysis")
     gk=df.groupby('vertical')['amount'].sum().sort_values(ascending=False)
     gk=gk.reset_index()
     choice = st.selectbox("Choose a vertical:",gk['vertical'].iloc[0:25])
-    st.subheader("Number of Startups vs Year")
-    selection = st.selectbox("Options",['Lineplot','DataFrame'],key='selectbox2')
-    if(selection=="Lineplot"):
-        vertical_analysis(choice,selection)
-        
-    else:
-        
-        data_frame = vertical_analysis(choice,selection)
-        st.dataframe(data_frame.style.set_properties(**{'background-color': '#262730','text-align': 'center',}))
-    st.write("\n")
+    col1,col2 = st.columns(2)
+    
+    with col1:
+        ## Vertical Wise Analysis
+        st.subheader("Number of Startups vs Year")
+        selection = st.selectbox("Options",['Lineplot','DataFrame'],key='selectbox2')
+        if(selection=="Lineplot"):
+            vertical_analysis(choice,selection)
+            
+        else:
+            
+            data_frame = vertical_analysis(choice,selection)
+            st.dataframe(data_frame.style.set_properties(**{'background-color': '#262730','text-align': 'center',}))
+        st.write("\n")
     
     
-    
-    ## Funding analysis
-    st.subheader("Funding vs Year")
-    selection = st.selectbox("Options",['Lineplot','DataFrame'],key='selectbox1')
-    if(selection=="Lineplot"):
-        funding_analysis(choice,selection)
+    with col2:
+        ## Funding analysis
+        st.subheader("Funding vs Year")
+        selection = st.selectbox("Options",['Lineplot','DataFrame'],key='selectbox1')
+        if(selection=="Lineplot"):
+            funding_analysis(choice,selection)
+            
+        else: 
+            data_frame = funding_analysis(choice,selection)
+            data_frame.drop(columns='vertical',inplace=True)
+            data_frame=data_frame.reset_index()
+            data_frame.drop(columns='index',inplace=True)
+            st.dataframe(data_frame.style.set_properties(**{'background-color': '#262730','text-align': 'center'}))
+        st.write("\n")
         
-    else: 
-        data_frame = funding_analysis(choice,selection)
-        data_frame.drop(columns='vertical',inplace=True)
-        data_frame=data_frame.reset_index()
-        data_frame.drop(columns='index',inplace=True)
-        st.dataframe(data_frame.style.set_properties(**{'background-color': '#262730','text-align': 'center'}))
-    st.write("\n")
     
     
 
