@@ -68,7 +68,9 @@ st.markdown("""---""")
 # data.to_csv('cities.csv')
 
 data = pd.read_csv('cities.csv')
-data = data.iloc[:,2:4]
+data = data[(data['lat'] >= 8.4) & (data['lat'] <= 37.6) & 
+                  (data['lon'] >= 68.7) & (data['lon'] <= 97.25)]
+data = data.iloc[:,3:5]
 st.map(data,  color = '#86FD02')
 
 st.header('Year Wise Analysis')
