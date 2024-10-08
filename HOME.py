@@ -1,3 +1,5 @@
+import math
+import altair as alt
 import streamlit as st 
 import pandas as pd 
 import matplotlib.pyplot as plt 
@@ -12,7 +14,7 @@ st.title("Home")
 t_amt = df['amount'].sum()
 avg = df['amount'].mean()
 med = df['amount'].median()
-max = df['amount'].max()
+max_v = df['amount'].max()
 funded_ct = df[df['amount']!=0]['startup'].count()
 funded_stups = df[df['amount']!=0]['startup'].unique().size
 investor_ct = df['investors'].unique().size
@@ -22,7 +24,7 @@ col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.metric('Total ₹', str(round(t_amt)) + ' cr')
 with col2:
-    st.metric('Maximum ₹', str(round(max)) + ' cr')
+    st.metric('Maximum ₹', str(round(max_v)) + ' cr')
 with col3:
     st.metric('Average ₹', str(round(avg)) + ' cr')
 with col4:
@@ -41,7 +43,8 @@ with col4:
     st.metric('\# Hubs', str(hubs))
 st.markdown("""---""")
 
-
+c1 = 'Orange'
+c2 = 'Blue'
 
 
 # from geopy.geocoders import ArcGIS
@@ -66,13 +69,14 @@ st.markdown("""---""")
 # data = data[(data['lat'] >= 8.4) & (data['lat'] <= 37.6) & 
 #                   (data['lon'] >= 68.7) & (data['lon'] <= 97.25)]
 # data.to_csv('cities.csv')
-
+st.subheader("Indian Startup Hubs")
 data = pd.read_csv('cities.csv')
 data = data[(data['lat'] >= 8.4) & (data['lat'] <= 37.6) & 
                   (data['lon'] >= 68.7) & (data['lon'] <= 97.25)]
 data = data.iloc[:,2:4]
 st.map(data,  color = '#86FD02')
 
+st.markdown("""---""")
 st.header('Year Wise Analysis')
 col1, col2 = st.columns(2)
 
@@ -89,6 +93,23 @@ def download_plot(fig, label, name):
             mime="image/png"
         )
 
+def plot_style(type):
+        fig, ax = plt.subplots(figsize=(10, 6))
+        fig.patch.set_facecolor('#0E1117') 
+        ax.set_facecolor('#262730')
+        ax.xaxis.set_tick_params(color='white',)  
+        ax.yaxis.set_tick_params(color='white')
+        if(type == 'Barplot'):
+            ax.tick_params(axis='x', colors='white')  
+            ax.tick_params(axis='y', colors='white')
+        else:
+            ax.tick_params(axis='x', colors='white', labelsize=10)  
+            ax.tick_params(axis='y', colors='white', labelsize=10)
+        ax.xaxis.label.set_color('white')        
+        ax.yaxis.label.set_color('white')        
+        ax.title.set_color('white')
+        return fig,ax
+
 def line_and_df(data, subtype, year_wise):
     data = data.reset_index()
     s = 'Counts'
@@ -97,52 +118,98 @@ def line_and_df(data, subtype, year_wise):
     data.columns = ['Year', s]
     
     if subtype == 'Barplot':
-        fig, ax = plt.subplots(figsize=(10, 6))
-        fig.patch.set_facecolor('#0E1117') 
-        ax.set_facecolor('#262730')
-        # Create an enhanced barplot
-        axis = sns.barplot(x=data['Year'], y=data[s],color="Orange", ax=ax)
+        # fig, ax = plot_style(subtype)
+        # axis = sns.barplot(x=data['Year'], y=data[s],color="Orange", ax=ax)
 
-        # Add labels to the bars
-        for container in axis.containers:
-            axis.bar_label(container, fmt='%d', padding=3, color='white')
-        ax.xaxis.set_tick_params(color='white',)  
-        ax.yaxis.set_tick_params(color='white')  
-        ax.tick_params(axis='x', colors='white')  
-        ax.tick_params(axis='y', colors='white')
-        ax.xaxis.label.set_color('white')        
-        ax.yaxis.label.set_color('white')        
-        ax.title.set_color('white')
+        # # Add labels to the bars
+        # for container in axis.containers:
+        #     axis.bar_label(container, fmt='%d', padding=3, color='white')
+        # ax.tick_params(axis='x', colors='white')  
+        # ax.tick_params(axis='y', colors='white')
+        # ax.set_title(f'{s} Over Years', fontsize=16)
+        # ax.set_xlabel('Year', fontsize=12)
+        # ax.set_ylabel(f'{s}', fontsize=12)
+        # st.pyplot(fig)
+        # download_plot(fig, year_wise, f"{year_wise}_{subtype}.png")
 
-        # Add title and axis labels with better styling
-        ax.set_title(f'{s} Over Years', fontsize=16)
-        ax.set_xlabel('Year', fontsize=12)
-        ax.set_ylabel(f'{s}', fontsize=12)
+        bars = alt.Chart(data).mark_bar(size=35).encode(
+            x=alt.X('Year:N', title='Year'),
+            y=alt.Y(f'{s}:Q', title=s),
+            color=alt.value(c1),
+            tooltip=[
+            alt.Tooltip("Year", title="Year: "),
+            alt.Tooltip(s, title=f'{s}: ', format='.0f'),
+        ],
+        ).properties(
+            # title='Statewise Startup Count',
+            height = 350,
+        
+        ).configure_axis(
+            labelAngle= 0,
+            labelFontSize=12,
+            titleFontSize=14
+        )
 
-        st.pyplot(fig)
-        download_plot(fig, year_wise, f"{year_wise}_{subtype}.png")
+        # Hover interaction
+        highlight = alt.selection_single(on='mouseover', empty='none')
+
+        # Chart with hover effect
+        bars = bars.encode(
+            color=alt.condition(highlight, alt.value('blue'), alt.value('orange')),
+            size=alt.condition(highlight, alt.value(55), alt.value(35))  # Enlarges on hover
+        ).add_selection(
+            highlight
+        )
+
+        # Show chart in Streamlit
+        st.altair_chart(bars, use_container_width=True)
+
     elif subtype == 'Lineplot':
-        fig, ax = plt.subplots(figsize=(10, 6))
-        fig.patch.set_facecolor('#0E1117') 
-        ax.set_facecolor('#262730')
-        sns.lineplot(x=data['Year'], y=data[s], marker='o', color='Orange', linewidth=2.5)
+        # fig, ax = plot_style(subtype)
+        # sns.lineplot(x=data['Year'], y=data[s], marker='o', color='Orange', linewidth=2.5)
+        # ax.set_title(f'{s} Over Years', fontsize=16)
+        # ax.set_xlabel('Year', fontsize=12)
+        # ax.set_ylabel(f'{s}', fontsize=12)
 
-        # ax.grid(True, which='both', linestyle='--', linewidth=0.7, alpha=0.7)
-        ax.xaxis.set_tick_params(color='white')  
-        ax.yaxis.set_tick_params(color='white')  
-        ax.tick_params(axis='x', colors='white', labelsize=4)  
-        ax.tick_params(axis='y', colors='white', labelsize=4)
-        ax.xaxis.label.set_color('white')        
-        ax.yaxis.label.set_color('white')        
-        ax.title.set_color('white')
-        ax.set_title(f'{s} Over Years', fontsize=16)
-        ax.set_xlabel('Year', fontsize=12)
-        ax.set_ylabel(f'{s}', fontsize=12)
+        # st.pyplot(fig)
+        # download_plot(fig, year_wise, f"{year_wise}_{subtype}.png")
+        hover = alt.selection_single(on='mouseover', nearest=True, empty='none', fields=['Year'])
 
+        line_chart = alt.Chart(data).mark_line(color='orange', point=True).encode(
+            x=alt.X('Year:O', title='Year', axis=alt.Axis(labelAngle=0)),
+            y=alt.Y(f'{s}:Q', title=f'{s}',),
+            tooltip=[
+            alt.Tooltip("Year", title="Year: "),
+            alt.Tooltip(s, title=f'{s}: ', format='.0f'),
+        ]
+        ).properties(
+            width=600,
+            height=400
+        )
 
-        # Add the plot to Streamlit
-        st.pyplot(fig)
-        download_plot(fig, year_wise, f"{year_wise}_{subtype}.png")
+        # Add hover effect for color change
+        highlight_points = line_chart.mark_circle(size=100).encode(
+            color=alt.condition(hover, alt.value('blue'), alt.value('orange')),
+            size=alt.condition(hover, alt.value(150), alt.value(100))
+        ).add_selection(
+            hover
+        )
+
+        # Combine line chart and highlighted points
+        final_chart = (line_chart + highlight_points).properties(
+        ).configure_axis(
+            labelColor='white',
+            labelAngle=0,
+            grid=False
+        ).configure_view(
+            strokeWidth=0
+        ).configure_title(
+            color='white',
+            fontSize=16
+        ).configure()  # Apply background config here
+
+        # Display the chart in Streamlit
+        st.altair_chart(final_chart, use_container_width=True)
     else:            
         data['Year'] = data['Year'].astype(str)
         st.write('Data Overview:')
@@ -170,3 +237,7 @@ with col2:
 # fig, ax = plt.subplots(figsize=(10, 6))
 # plt.plot(range(len(df['amount'])),df['amount'],marker='o')
 # st.pyplot(fig)
+
+st.markdown("""---""")
+
+# download_plot(bars,"State_wise_startup_ct", f"State_wise_starup_ct.png")
