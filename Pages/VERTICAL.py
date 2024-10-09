@@ -13,37 +13,31 @@ df = pd.read_csv("startup_funding.csv")
 
 
 def line_plot(df,x,y):
-    fig, ax = plt.subplots(figsize=(6, 2.5))
-    fig.patch.set_facecolor('#0E1117') 
-    ax.set_facecolor('#262730')
-    sns.lineplot(data=df, x=x, y=y,color="Orange", ax=ax)
-
-    ax.xaxis.set_tick_params(color='white')  
-    ax.yaxis.set_tick_params(color='white')  
-    ax.tick_params(axis='x', colors='white', labelsize=4)  
-    ax.tick_params(axis='y', colors='white', labelsize=4)
-    ax.xaxis.label.set_color('white')        
-    ax.yaxis.label.set_color('white')        
-    ax.title.set_color('white')
-    st.pyplot(fig)
-    
+    line_chart = alt.Chart(df).mark_line(color='Orange').encode(
+        x=x,
+        y=y,
+        tooltip=[x, y]
+    ).interactive()
+    st.altair_chart(line_chart, use_container_width=True)
 def bar_plot(df,x,y):
-    fig, ax = plt.subplots(figsize=(6, 2.5))
-    fig.patch.set_facecolor('#0E1117') 
-    ax.set_facecolor('#262730')
-    axis = sns.barplot(data=df, x=x, y=y, color="Orange", ax=ax)
-
-    for container in axis.containers:
-        axis.bar_label(container, fmt='%d', padding=3, color='white',fontsize = 5)
-    ax.xaxis.set_tick_params(color='white',)  
-    ax.yaxis.set_tick_params(color='white')  
-    ax.tick_params(axis='x', colors='white',labelsize=5)  
-    ax.tick_params(axis='y', colors='white',labelsize=5)
-    ax.xaxis.label.set_color('white')        
-    ax.yaxis.label.set_color('white')        
-    ax.title.set_color('white')
-    # ax.set_xscale('log', base=2)
-    st.pyplot(fig)
+    bar_chart = alt.Chart(df).mark_bar(color="orange").encode(
+       x=x,
+       y=y,
+       tooltip=[x,y]
+    ).properties(
+        width=700,  # Set the width of the chart
+        height=500,  # Set the height of the chart
+    ).interactive()
+    
+    highlight = alt.selection_single(on='mouseover', empty='none')
+    
+    bar_chart = bar_chart.encode(
+            color=alt.condition(highlight, alt.value('red'), alt.value('orange')),
+            size=alt.condition(highlight, alt.value(55), alt.value(35))  # Enlarges on hover
+        ).add_selection(
+            highlight
+        )
+    st.altair_chart(bar_chart, use_container_width=True)
     
 ## TAB 1 Functions
 # @st.cache_data
@@ -153,3 +147,17 @@ with tab1:
     
     
 
+## Tab2:
+with tab2:
+    gk=df.groupby('vertical')['amount'].sum().sort_values(ascending=False)
+    gk=gk.reset_index()
+    gk = gk.iloc[0:n]
+    
+    st.header("Compare Verticals")
+    col1,col2 = st.columns(2)
+    
+    with col1:
+        choice = st.selectbox("Choose a vertical",[gk['vertical']],key= 'selectbox3')
+        st.subheader(f"{choice}")
+        
+        

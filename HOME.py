@@ -155,7 +155,7 @@ def line_and_df(data, subtype, year_wise):
 
         # Chart with hover effect
         bars = bars.encode(
-            color=alt.condition(highlight, alt.value('blue'), alt.value('orange')),
+            color=alt.condition(highlight, alt.value('red'), alt.value('orange')),
             size=alt.condition(highlight, alt.value(55), alt.value(35))  # Enlarges on hover
         ).add_selection(
             highlight
