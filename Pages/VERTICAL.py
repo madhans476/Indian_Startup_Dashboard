@@ -12,22 +12,26 @@ st.write()
 df = pd.read_csv("startup_funding.csv")
 
 
-def line_plot(df,x,y):
+def line_plot(df,x,y,n):
     line_chart = alt.Chart(df).mark_line(color='Orange').encode(
         x=x,
         y=y,
         tooltip=[x, y]
-    ).interactive()
+    )
     st.altair_chart(line_chart, use_container_width=True)
-def bar_plot(df,x,y):
+def bar_plot(df,x,y,n):
+    bh = 68
+    min_bh = 450
+    ch = max(n * bh, min_bh)
+    
     bar_chart = alt.Chart(df).mark_bar(color="orange").encode(
        x=x,
-       y=y,
+       y=alt.Y(y,sort='-x'),
        tooltip=[x,y]
     ).properties(
         width=700,  # Set the width of the chart
-        height=500,  # Set the height of the chart
-    ).interactive()
+        height=ch,  # Set the height of the chart
+    )
     
     highlight = alt.selection_single(on='mouseover', empty='none')
     
@@ -45,7 +49,7 @@ def funding_bar_plot(n):
     gk=df.groupby('vertical')['amount'].sum().sort_values(ascending=False)
     gk=gk.reset_index()
     gk = gk.iloc[0:n]
-    bar_plot(gk,'amount','vertical')
+    bar_plot(gk,'amount','vertical',n)
     
     
 # @st.cache_data    
@@ -55,7 +59,7 @@ def year_wise(year):
     gk = gk[gk['year']==year]
     sorted_df = gk.sort_values(by='startup', ascending=False)
     sorted_df = sorted_df.iloc[0:10]
-    bar_plot(sorted_df,"startup","vertical")
+    bar_plot(sorted_df,"startup","vertical",10)
 
 # @st.cache_data      
 def vertical_analysis(choice,selection):
@@ -65,7 +69,7 @@ def vertical_analysis(choice,selection):
     df_filtered['year'] = df_filtered['year'].astype(str)
     if selection == "DataFrame":
         return df_filtered
-    line_plot(df_filtered,'year','startup')
+    line_plot(df_filtered,'year','startup',n)
     
     
 def funding_analysis(choice,selection):
@@ -75,7 +79,7 @@ def funding_analysis(choice,selection):
     gk['year']=gk['year'].astype(str)
     if selection=="DataFrame":
         return gk
-    line_plot(gk,'year','amount')
+    line_plot(gk,'year','amount',n)
 
 ## Tab 1
 with tab1:

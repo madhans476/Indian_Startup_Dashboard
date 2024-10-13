@@ -3,7 +3,6 @@ import altair as alt
 import streamlit as st 
 import pandas as pd 
 import matplotlib.pyplot as plt 
-import seaborn as sns
 from io import BytesIO
 
 st.set_page_config(layout='wide',page_title='StartUp Funding Analysis')
@@ -43,8 +42,8 @@ with col4:
     st.metric('\# Hubs', str(hubs))
 st.markdown("""---""")
 
-c1 = 'Orange'
-c2 = 'Blue'
+color1 = 'Orange'
+color2 = '#03B3FD'
 
 
 # from geopy.geocoders import ArcGIS
@@ -135,19 +134,16 @@ def line_and_df(data, subtype, year_wise):
         bars = alt.Chart(data).mark_bar(size=35).encode(
             x=alt.X('Year:N', title='Year'),
             y=alt.Y(f'{s}:Q', title=s),
-            color=alt.value(c1),
+            color=alt.value(color1),
             tooltip=[
             alt.Tooltip("Year", title="Year: "),
             alt.Tooltip(s, title=f'{s}: ', format='.0f'),
         ],
         ).properties(
-            # title='Statewise Startup Count',
             height = 350,
-        
         ).configure_axis(
             labelAngle= 0,
             labelFontSize=12,
-            titleFontSize=14
         )
 
         # Hover interaction
@@ -155,18 +151,18 @@ def line_and_df(data, subtype, year_wise):
 
         # Chart with hover effect
         bars = bars.encode(
-            color=alt.condition(highlight, alt.value('red'), alt.value('orange')),
+            color=alt.condition(highlight, alt.value(color2), alt.value(color1)),
             size=alt.condition(highlight, alt.value(55), alt.value(35))  # Enlarges on hover
         ).add_selection(
             highlight
         )
 
-        # Show chart in Streamlit
         st.altair_chart(bars, use_container_width=True)
 
     elif subtype == 'Lineplot':
+        #! Static plot
         # fig, ax = plot_style(subtype)
-        # sns.lineplot(x=data['Year'], y=data[s], marker='o', color='Orange', linewidth=2.5)
+        # sns.lineplot(x=data['Year'], y=data[s], marker='o', color=color1, linewidth=2.5)
         # ax.set_title(f'{s} Over Years', fontsize=16)
         # ax.set_xlabel('Year', fontsize=12)
         # ax.set_ylabel(f'{s}', fontsize=12)
@@ -175,7 +171,7 @@ def line_and_df(data, subtype, year_wise):
         # download_plot(fig, year_wise, f"{year_wise}_{subtype}.png")
         hover = alt.selection_single(on='mouseover', nearest=True, empty='none', fields=['Year'])
 
-        line_chart = alt.Chart(data).mark_line(color='orange', point=True).encode(
+        line_chart = alt.Chart(data).mark_line(color=color1, point=True).encode(
             x=alt.X('Year:O', title='Year', axis=alt.Axis(labelAngle=0)),
             y=alt.Y(f'{s}:Q', title=f'{s}',),
             tooltip=[
@@ -189,7 +185,7 @@ def line_and_df(data, subtype, year_wise):
 
         # Add hover effect for color change
         highlight_points = line_chart.mark_circle(size=100).encode(
-            color=alt.condition(hover, alt.value('blue'), alt.value('orange')),
+            color=alt.condition(hover, alt.value(color2), alt.value(color1)),
             size=alt.condition(hover, alt.value(150), alt.value(100))
         ).add_selection(
             hover
