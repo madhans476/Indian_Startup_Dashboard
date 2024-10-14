@@ -7,7 +7,9 @@ import altair as alt
 st.set_page_config(layout='wide',page_title="Cities")
 
 df = pd.read_csv("startup_funding.csv")
+st.title("Analysis Based On Location")
 
+st.markdown("""---""")
 color1 = 'Orange'
 color2 = 'Blue'
 
@@ -44,68 +46,115 @@ color2 = 'Blue'
 # # Display the plot in Streamlit
 # st.pyplot(fig)
 
+#! function imports
+from functions import Barplot
+from functions import DataFrame
 
 
 st.subheader('Statewise Startup Count')
 
-
-
-def Barplot(n,data):
-    bh = 68
-    min_bh = 450
-    ch = max(n * bh, min_bh)
-
-    base_bar_size = 60 
-    min_bar_size = 10
-    bar_size = max(base_bar_size - n * (1.2), min_bar_size)
-
-    bars = alt.Chart(data).mark_bar(size=bar_size).encode(
-        x=alt.X('count:Q', title='Count'),
-        y=alt.Y('state:N', title='State', sort='-x'),
-        color=alt.value(color1),
-        tooltip=[alt.Tooltip('count', title="Count: "), alt.Tooltip('state', title="State: ")]
-    ).properties(
-        height = ch
-    ).configure_axis(
-        labelFontSize=12,
-    )
-
-    # Hover interaction
-    highlight = alt.selection_single(on='mouseover', empty='none')
-
-    # Chart with hover effect
-    bars = bars.encode(
-        color=alt.condition(highlight, alt.value(color2), alt.value(color1)),
-        size=alt.condition(highlight, alt.value(bar_size+(bar_size/3)), alt.value(bar_size))  # Enlarges on hover
-    ).add_selection(
-        highlight
-    )
-
-    # Show chart in Streamlit
-    st.altair_chart(bars, use_container_width=True)
-def DataFrame(n,data):
-    data = data.sort_values('count', ascending=False)
-    st.write('Data Overview:')
-    h = n*41
-    st.dataframe(data.style.set_properties(**{
-            'background-color': '#262730',
-            'border': '1px solid black',
-            'text-align': 'center'
-        }), height = h, width = 400)
-
-
-n = st.slider("Select n:",2,18,5)
-data = df['state'].value_counts().reset_index()
+n = st.slider("Select n:",2,18,5, key='loc7')
+data = df['state'].value_counts().reset_index().sort_values(by=['count', 'state'], ascending=[False, True])
 # data = data.drop(index=3)
 
 data = data[:n]
-data = data.sort_values('count', ascending=True)
-type = st.selectbox('Type:',['BarPlot', 'DataFrame'])
-if type=='BarPlot':
-    Barplot(n,data)
+data = data.reset_index(drop=True)
+data.index = data.index + 1
+type1 = st.selectbox('Type:',['BarPlot', 'DataFrame'], key='loc1')
+if type1=='BarPlot':
+    Barplot(n,data, 'count', 'state',1)
 else:
     DataFrame(n,data)
 
 st.markdown("""---""")
 
+#! -------------------------------------------------------------------------------------------------------------------
+st.subheader('Statewise Amount Funded')
 
+n = st.slider("Select n:",2,18,5, key='loc8')
+data = df.groupby('state')['amount'].sum().sort_values(ascending=False).reset_index()
+# data = data.drop(index=3)
+
+data = data[:n]
+data = data.reset_index(drop=True)
+data.index = data.index + 1
+type1 = st.selectbox('Type:',['BarPlot', 'DataFrame'], key='loc6')
+if type1=='BarPlot':
+    Barplot(n,data, 'amount', 'state',1)
+else:
+    DataFrame(n,data, True)
+
+st.markdown("""---""")
+#! -------------------------------------------------------------------------------------------------------------------
+
+
+st.header('Statewise Analysis')
+state_names = sorted(list(df['state'].unique()))
+
+state = st.selectbox('Select the State:', state_names)
+# state = 'Tamil Nadu'
+sample = df[df['state']==state]
+ct = sample['Sr No'].count()
+
+st.subheader(f"# Startups from :orange-background[{state}] : {ct}",)
+
+#! function imports
+from functions import bar_line_and_df
+
+st.subheader('Year Wise Analysis:')
+col1, col2 = st.columns(2)
+
+with col1:
+    year_wise = 'Amount Funded'
+    st.subheader("Amount Funded Year Wise")
+    subtype = st.selectbox("Subtype",['Barplot','Lineplot','DataFrame'], key='loc2')
+    data = sample.groupby(by='year')['amount'].sum()
+    bar_line_and_df(data, subtype, year_wise)
+
+
+with col2:
+    year_wise = '# Fundings'
+    st.subheader("Number of Fundings Year Wise")
+    subtype = st.selectbox("SubType",['Barplot','Lineplot','DataFrame'], key='loc3')
+    data = sample['year'].value_counts()
+    bar_line_and_df(data, subtype, year_wise)
+
+#! -------------------------------------------------------------------------------------------------------------------
+
+
+st.subheader('Vertical Wise Analysis:')
+total = sample['vertical'].nunique()
+initial = 6
+if initial > total:
+    initial = total
+if total>2:
+    n2 = st.slider("Select :",2,total,initial)
+else: 
+    n2 = total
+
+col_1, col_2 = st.columns(2)
+with col_1:
+    st.subheader("Amount Funded Vertical Wise")
+    type2 = st.selectbox('Type:',['BarPlot', 'DataFrame'], key='loc4')
+    data = sample.groupby('vertical')['amount'].sum().reset_index().sort_values(by=['amount', 'vertical'], ascending=[False, True])
+    data = data[:n2]
+    data = data.reset_index(drop=True)
+    data.index = data.index + 1
+    if type2 == 'BarPlot' :
+        Barplot(n2,data,'amount', 'vertical', 1.5)
+    else: 
+        DataFrame(n2,data, True)
+    
+
+with col_2:
+    st.subheader("Number of Fundings Vertical Wise")
+    type3 = st.selectbox('Type:',['BarPlot', 'DataFrame'], key='loc5')
+    data = sample.groupby('vertical')['Sr No'].count().reset_index().sort_values(by=['Sr No', 'vertical'], ascending=[False, True])
+    data.columns = ['vertical', 'count']
+    data = data[:n2]
+    data = data.reset_index(drop=True)
+    data.index = data.index + 1
+    if type3 == 'BarPlot' :
+        Barplot(n2,data,'count', 'vertical', 1.5)
+    else: 
+        DataFrame(n2, data)
