@@ -46,7 +46,7 @@ with col2:
     data = data['year'].value_counts()
     bar_line_and_df(data, subtype, 'Count')
 
-st.caption("Non-Funding investments include Mentorship, Marketing, Branding, Networking Oppurtunities, Resources(workspace, facilities, tools) etc.,")
+st.caption("Non-funding investments include mentorship, marketing, branding, networking opportunities, and resources (workspace, facilities, tools), etc.")
 st.markdown("""---""")
 
 st.header("Amount Invested Year Wise")

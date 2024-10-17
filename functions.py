@@ -115,10 +115,10 @@ def bar_line_and_df(data, subtype, year_wise, ht = 350, bs = 35):
             'border': '1px solid black',
             # 'color': 'black',
             'text-align': 'center'
-        }), width = 400)
+        }), width = 450)
 
 
-def Barplot(n,data,x,y, c):
+def Barplot(n,data,x,y, c, vertical = False, least = False): # Horizontal bar plot
     bh = 68/c
     min_bh = 500/c
     ch = max(n * bh, min_bh)
@@ -133,11 +133,19 @@ def Barplot(n,data,x,y, c):
         xt = x[0].upper() + x[1:]
     yt = y[0].upper() + y[1:]
 
+    tooltip = [
+        alt.Tooltip(x, title=f"{xt}: ", format='.0f' if least == False else '.4f'),
+        alt.Tooltip(y, title=f"{yt}: ")
+    ]
+    
+    if vertical:
+        tooltip.append(alt.Tooltip('vertical:N', title='Vertical: '))
+
     bars = alt.Chart(data).mark_bar(size=bar_size).encode(
         x=alt.X(x, title=xt, axis=alt.Axis(format='d' if x != 'amount' else 'f'), ), # scale=alt.Scale(type='log', domain=[1, 131072])
-        y=alt.Y(y, title=yt, sort='-x'),
+        y=alt.Y(y, title=yt, sort='-x' if least == False else 'x'),
         color=alt.value(color1),
-        tooltip=[alt.Tooltip(x, title=f"{xt}: ", format='.0f'), alt.Tooltip(y, title=f"{yt}: " )]
+        tooltip=tooltip
     ).properties(
         height = ch
     ).configure_axis(
