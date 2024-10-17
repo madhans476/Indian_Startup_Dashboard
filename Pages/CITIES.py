@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import geopandas as gpd 
-import matplotlib.pyplot as plt
-import altair as alt
 
 st.set_page_config(layout='wide',page_title="Cities")
 

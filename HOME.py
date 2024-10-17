@@ -109,7 +109,8 @@ with col2:
     year_wise = '# Fundings'
     st.subheader("Number of Fundings Year Wise")
     subtype = st.selectbox("SubType",['Barplot','Lineplot','DataFrame'])
-    data = df['year'].value_counts()
+    data = df[df['amount'] > 0]
+    data = data['year'].value_counts()
     bar_line_and_df(data, subtype, year_wise)
 
 # fig, ax = plt.subplots(figsize=(10, 6))

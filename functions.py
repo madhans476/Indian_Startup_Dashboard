@@ -6,10 +6,10 @@ color1 = 'Orange'
 color2 = 'Blue'
 
 def capitalize_column_names(data):
-    data.columns = [col[0].upper() + col[1:] if col else col for col in data.columns]
+    data.columns = [col[0].upper() + col[1:] for col in data.columns]
 
 
-def bar_line_and_df(data, subtype, year_wise):
+def bar_line_and_df(data, subtype, year_wise, ht = 350, bs = 35):
     data = data.reset_index()
     s = 'Counts'
     if year_wise == 'Amount Funded':
@@ -31,16 +31,16 @@ def bar_line_and_df(data, subtype, year_wise):
         # st.pyplot(fig)
         # download_plot(fig, year_wise, f"{year_wise}_{subtype}.png")
 
-        bars = alt.Chart(data).mark_bar(size=35).encode(
+        bars = alt.Chart(data).mark_bar(size=bs).encode(
             x=alt.X('Year:N', title='Year'),
-            y=alt.Y(f'{s}:Q', title=s),
+            y=alt.Y(f'{s}:Q', title=s, axis=alt.Axis(format='d' if s == 'Counts' else 'f') ),
             color=alt.value(color1),
             tooltip=[
             alt.Tooltip("Year", title="Year: "),
             alt.Tooltip(s, title=f'{s}: ', format='.0f'),
         ],
         ).properties(
-            height = 350,
+            height = ht,
         ).configure_axis(
             labelAngle= 0,
             labelFontSize=12,
@@ -52,7 +52,7 @@ def bar_line_and_df(data, subtype, year_wise):
         # Chart with hover effect
         bars = bars.encode(
             color=alt.condition(highlight, alt.value(color2), alt.value(color1)),
-            size=alt.condition(highlight, alt.value(55), alt.value(35))  # Enlarges on hover
+            size=alt.condition(highlight, alt.value(bs+(bs/1.75)), alt.value(bs))  # Enlarges on hover
         ).add_selection(
             highlight
         )
@@ -73,14 +73,14 @@ def bar_line_and_df(data, subtype, year_wise):
     
         line_chart = alt.Chart(data).mark_line(color=color1, point=True).encode(
             x=alt.X('Year:O', title='Year', axis=alt.Axis(labelAngle=0)),
-            y=alt.Y(f'{s}:Q', title=f'{s}',),
+            y=alt.Y(f'{s}:Q', title=f'{s}',axis=alt.Axis(format='d' if s == 'Counts' else 'f')),
             tooltip=[
             alt.Tooltip("Year", title="Year: "),
             alt.Tooltip(s, title=f'{s}: ', format='.0f'),
         ]
         ).properties(
             width=600,
-            height=400
+            height=ht+50
         )
 
         # Add hover effect for color change
@@ -132,9 +132,10 @@ def Barplot(n,data,x,y, c):
     else: 
         xt = x[0].upper() + x[1:]
     yt = y[0].upper() + y[1:]
+
     bars = alt.Chart(data).mark_bar(size=bar_size).encode(
-        x=alt.X(x, title=x),
-        y=alt.Y(y, title=y, sort='-x'),
+        x=alt.X(x, title=xt, axis=alt.Axis(format='d' if x != 'amount' else 'f'), ), # scale=alt.Scale(type='log', domain=[1, 131072])
+        y=alt.Y(y, title=yt, sort='-x'),
         color=alt.value(color1),
         tooltip=[alt.Tooltip(x, title=f"{xt}: ", format='.0f'), alt.Tooltip(y, title=f"{yt}: " )]
     ).properties(
@@ -164,9 +165,9 @@ def DataFrame(n,data, amount = False):
         data.rename(columns={'amount': 'Total ₹ (Cr)'}, inplace=True)
     capitalize_column_names(data)
     st.write('Data Overview:')
-    h = n*41
+    ht = n*41
     st.dataframe(data.style.set_properties(**{
             'background-color': '#262730',
             'border': '1px solid black',
             'text-align': 'center'
-        }), height = h, width = 450)
+        }), height = ht, width = 450)
